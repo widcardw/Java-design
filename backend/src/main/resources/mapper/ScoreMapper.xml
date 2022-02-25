@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.njnu.curriculumdesign.mapper.ScoreMapper">
+    <resultMap id="ScoreResultMap" type="cn.edu.njnu.curriculumdesign.dto.ScoreDto">
+        <result column="user_id" property="userId"/>
+        <result column="username" property="stuName"/>
+        <result column="nickname" property="stuNickname"/>
+
+        <result column="course_id" property="courseId"/>
+        <result column="course_name" property="courseName"/>
+
+        <result column="score" property="score"/>
+    </resultMap>
+
+    <select id="getScore" resultMap="ScoreResultMap">
+        select
+            tbl_sc.user_id,
+            tbl_user.username,
+            tbl_user.nickname,
+            tbl_sc.course_id,
+            tbl_course.course_name,
+            tbl_sc.score
+        from tbl_sc
+            left outer join tbl_user on tbl_sc.user_id = tbl_user.id
+            left outer join tbl_course on tbl_sc.course_id = tbl_course.id
+        limit #{pageNum}, #{pageSize}
+    </select>
+
+    <update id="updateScore">
+        update tbl_sc
+        set score = #{score}
+        where user_id = #{userId} and course_id = #{courseId}
+    </update>
+
+    <delete id="deleteScore">
+        delete from tbl_sc
+        where user_id = #{userId} and course_id = #{courseId}
+    </delete>
+
+    <insert id="insertScore">
+        insert into tbl_sc(user_id, course_id, score)
+        values (#{userId}, #{courseId}, #{score})
+    </insert>
+
+    <select id="countByStuId" resultType="int">
+        select count(1)
+        from tbl_sc
+        where user_id = #{userId}
+    </select>
+
+    <select id="countByCourseId" resultType="int">
+        select count(1)
+        from tbl_sc
+        where course_id = #{courseId}
+    </select>
+
+    <select id="getScorePageByStuId" resultMap="ScoreResultMap">
+        select
+            tbl_sc.user_id,
+            tbl_user.username,
+            tbl_user.nickname,
+            tbl_sc.course_id,
+            tbl_course.course_name,
+            tbl_sc.score
+        from tbl_sc
+            left outer join tbl_user on tbl_sc.user_id = tbl_user.id
+            left outer join tbl_course on tbl_sc.course_id = tbl_course.id
+        where tbl_sc.user_id = #{userId}
+        limit #{pageNum}, #{pageSize}
+    </select>
+
+    <select id="getScorePageByCourseId" resultMap="ScoreResultMap">
+        select
+            tbl_sc.user_id,
+            tbl_user.username,
+            tbl_user.nickname,
+            tbl_sc.course_id,
+            tbl_course.course_name,
+            tbl_sc.score
+        from tbl_sc
+            left outer join tbl_user on tbl_sc.user_id = tbl_user.id
+            left outer join tbl_course on tbl_sc.course_id = tbl_course.id
+        where tbl_sc.course_id = #{courseId}
+        limit #{pageNum}, #{pageSize}
+    </select>
+
+</mapper>

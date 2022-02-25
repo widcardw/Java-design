@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.njnu.curriculumdesign.mapper.PostMapper">
+
+    <resultMap id="SimplePost" type="cn.edu.njnu.curriculumdesign.entity.Post">
+        <id column="tbl_post.id" property="id"/>
+        <result column="tbl_post.title" property="title"/>
+        <result column="tbl_post.content" property="content"/>
+        <result column="tbl_post.question_score" property="questionScore"/>
+        <result column="tbl_post.create_date" property="createDate"/>
+    </resultMap>
+
+    <resultMap id="PostDtoResult" type="cn.edu.njnu.curriculumdesign.dto.PostDto">
+
+        <id column="post_id" property="id"/>
+        <result column="post_title" property="title"/>
+        <result column="post_content" property="content"/>
+        <result column="post_question_score" property="questionScore"/>
+        <result column="post_create_date" property="createDate"/>
+
+        <association property="author" javaType="cn.edu.njnu.curriculumdesign.entity.User">
+            <id column="author_id" property="id"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="level" property="level"/>
+            <result column="is_teacher" property="isTeacher"/>
+        </association>
+
+        <association property="course" javaType="cn.edu.njnu.curriculumdesign.entity.Course">
+            <id column="course_id" property="id"/>
+            <result column="course_name" property="courseName"/>
+        </association>
+
+        <collection property="tags" ofType="cn.edu.njnu.curriculumdesign.entity.Tag">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="tagName"/>
+            <result column="tag_course_id" property="courseId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getPostDtoPageByCourseIdAndTagList" resultMap="PostDtoResult">
+        select tbl_post.id as post_id,
+        tbl_post.title as post_title,
+        tbl_post.content as post_content,
+        tbl_post.question_score as post_question_score,
+        tbl_post.create_date as post_create_date,
+
+        tbl_post.author_id as author_id,
+        tbl_user.username   as username,
+        tbl_user.nickname  as nickname,
+        tbl_user.level    as level,
+        tbl_user.is_teacher as is_teacher,
+
+        tbl_post.course_id as course_id,
+        tbl_course.course_name as course_name,
+
+        tbl_tag.id as tag_id,
+        tbl_tag.tag_name as tag_name,
+        tbl_tag.course_id as tag_course_id
+
+        from tbl_post
+        left outer join tbl_user on tbl_post.author_id= tbl_user.id
+        left outer join tbl_course on tbl_post.course_id= tbl_course.id
+        left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=tbl_post.id)
+        where tbl_post.course_id=#{courseId}
+        and tbl_post.id in (
+        select tbl_tag_relation.post_id
+        from tbl_tag_relation
+        where tbl_tag_relation.tag_id in
+        <foreach collection="tagIds" item="item" open="(" separator="," close=")">
+            #{item, jdbcType=INTEGER}
+        </foreach>
+        )
+        order by tbl_post.create_date desc
+        limit #{pageNum}
+        , #{pageSize}
+    </select>
+
+    <select id="pageByCourseId"  resultMap="PostDtoResult">
+        select tbl_post.id as post_id,
+               tbl_post.title as post_title,
+               tbl_post.content as post_content,
+               tbl_post.question_score as post_question_score,
+               tbl_post.create_date as post_create_date,
+
+               tbl_post.author_id as author_id,
+               tbl_user.username   as username,
+               tbl_user.nickname  as nickname,
+               tbl_user.level    as level,
+               tbl_user.is_teacher as is_teacher,
+
+               tbl_post.course_id as course_id,
+               tbl_course.course_name as course_name,
+
+               tbl_tag.id as tag_id,
+               tbl_tag.tag_name as tag_name,
+               tbl_tag.course_id as tag_course_id
+
+        from tbl_post
+                 left outer join tbl_user on tbl_post.author_id= tbl_user.id
+                 left outer join tbl_course on tbl_post.course_id= tbl_course.id
+                 left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=tbl_post.id)
+        where tbl_post.course_id=#{courseId}
+        order by tbl_post.create_date desc
+            limit #{pageNum}
+               , #{pageSize}
+    </select>
+
+    <select id="pageAll" resultMap="PostDtoResult">
+        select tbl_post.id as post_id,
+               tbl_post.title as post_title,
+               tbl_post.content as post_content,
+               tbl_post.question_score as post_question_score,
+               tbl_post.create_date as post_create_date,
+
+               tbl_post.author_id as author_id,
+               tbl_user.username   as username,
+               tbl_user.nickname  as nickname,
+               tbl_user.level    as level,
+               tbl_user.is_teacher as is_teacher,
+
+               tbl_post.course_id as course_id,
+               tbl_course.course_name as course_name,
+
+               tbl_tag.id as tag_id,
+               tbl_tag.tag_name as tag_name,
+               tbl_tag.course_id as tag_course_id
+
+        from tbl_post
+                 left outer join tbl_user on tbl_post.author_id= tbl_user.id
+                 left outer join tbl_course on tbl_post.course_id= tbl_course.id
+                 left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=tbl_post.id)
+        order by tbl_post.create_date desc
+            limit #{pageNum}
+               , #{pageSize}
+    </select>
+
+    <select id="getPostPageByCourseIdAndTag" resultType="cn.edu.njnu.curriculumdesign.entity.Post">
+        select *
+        from tbl_post
+        where tbl_post.course_id=#{courseId}
+        and tbl_post.id in (
+        select tbl_tag_relation.post_id
+        from tbl_tag_relation
+        where tbl_tag_relation.tag_id in
+        <foreach collection="tagIds" item="item" open="(" separator="," close=")">
+            #{item, jdbcType=INTEGER}
+        </foreach>
+        )
+        limit #{pageNum}
+        , #{pageSize}
+    </select>
+
+    <select id="countPostPageByCourseIdAndTag" resultType="long">
+        select count(1)
+        from tbl_post
+        where course_id = #{courseId}
+        and id in (
+        select post_id
+        from tbl_tag_relation
+        where tag_id in
+        <foreach collection="tagIds" item="item" open="(" separator="," close=")">
+            #{item, jdbcType=INTEGER}
+        </foreach>
+        )
+    </select>
+</mapper>

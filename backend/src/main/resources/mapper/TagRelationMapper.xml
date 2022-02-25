@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.njnu.curriculumdesign.mapper.TagRelationMapper">
+
+    <!--    还有一些问题，是关于标签列表的    -->
+<!--    <select id="getPostPageByTag" resultMap="cn.edu.njnu.curriculumdesign.entity.Post">-->
+<!--        select *-->
+<!--        from tbl_post-->
+<!--        where course_id = #{courseId}-->
+<!--          and id in (-->
+<!--            select post_id-->
+<!--            from tbl_tag_relation-->
+<!--            where #{tagId} in (-->
+<!--                select tag_id-->
+<!--                from tbl_tag_relation-->
+<!--                where post_id = #{postId}-->
+<!--            )-->
+<!--        )-->
+<!--            limit #{pageNum}-->
+<!--            , #{pageSize}-->
+<!--    </select>-->
+
+<!--    <select id="getPostPageByCourseId" resultMap="cn.edu.njnu.curriculumdesign.entity.Post">-->
+<!--        select *-->
+<!--        from tbl_post-->
+<!--        where course_id = #{courseId} limit #{pageNum}-->
+<!--            , #{pageSize}-->
+<!--    </select>-->
+
+    <select id="getTagByPostId" resultType="cn.edu.njnu.curriculumdesign.entity.Tag">
+        select *
+        from tbl_tag
+        where id in (
+            select tag_id
+            from tbl_tag_relation
+            where post_id = #{postId}
+        )
+    </select>
+
+    <insert id="addTagRelation">
+        insert into tbl_tag_relation(post_id, tag_id)
+        values (#{postId}, #{tagId})
+    </insert>
+
+    <insert id="addTagRelationBatch">
+        insert into tbl_tag_relation(post_id, tag_id)
+        values
+        <foreach collection="tagRelations" item="item" separator=",">
+            (#{item.postId}, #{item.tagId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteTagRelation">
+        delete
+        from tbl_tag_relation
+        where post_id = #{postId}
+          and tag_id = #{tagId}
+    </delete>
+
+<!--    <select id="getPostCountByTag">-->
+<!--        select count(1)-->
+<!--        from tbl_post-->
+<!--        where id in (-->
+<!--            select post_id-->
+<!--            from tbl_tag_relation-->
+<!--            where tag_id = #{tagId}-->
+<!--        )-->
+<!--    </select>-->
+
+<!--    <select id="getPostCountByCourseId">-->
+<!--        select count(1)-->
+<!--        from tbl_post-->
+<!--        where course_id = #{courseId}-->
+<!--    </select>-->
+
+</mapper>

@@ -1,0 +1,15 @@
+server:
+  port: 9090
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/online_consulting?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
+    username: root
+    password: 12345678
+mybatis:
+  mapper-locations: classpath:mapper/*.xml    # mapper 映射文件位置，将 sql 语句写在 xml 文件中，需要通过这里的配置将映射文件引入
+  type-aliases-package: cn.edu.njnu.curriculumdesign.entity  # 实体类位置
+  configuration:
+    map-underscore-to-camel-case: true  # 转为驼峰命名法，免于数据库字段起别名
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 日志类
+    log-prefix: debug  # 日志级别
