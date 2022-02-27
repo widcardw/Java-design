@@ -4,9 +4,11 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.njnu.curriculumdesign.mapper.ScoreMapper">
     <resultMap id="ScoreResultMap" type="cn.edu.njnu.curriculumdesign.dto.ScoreDto">
-        <result column="user_id" property="userId"/>
+        <result column="user_id" property="stuId"/>
         <result column="username" property="stuName"/>
         <result column="nickname" property="stuNickname"/>
+        <result column="level" property="level"/>
+        <result column="is_teacher" property="isTeacher"/>
 
         <result column="course_id" property="courseId"/>
         <result column="course_name" property="courseName"/>
@@ -15,28 +17,33 @@
     </resultMap>
 
     <select id="getScore" resultMap="ScoreResultMap">
-        select
-            tbl_sc.user_id,
-            tbl_user.username,
-            tbl_user.nickname,
-            tbl_sc.course_id,
-            tbl_course.course_name,
-            tbl_sc.score
+        select tbl_sc.user_id         as user_id,
+               tbl_user.username      as username,
+               tbl_user.nickname      as nickname,
+               tbl_user.level         as level,
+               tbl_user.is_teacger    as is_teacher,
+               tbl_sc.course_id       as course_id,
+               tbl_course.course_name as course_name,
+               tbl_sc.score           as score
         from tbl_sc
-            left outer join tbl_user on tbl_sc.user_id = tbl_user.id
-            left outer join tbl_course on tbl_sc.course_id = tbl_course.id
-        limit #{pageNum}, #{pageSize}
+                 left outer join tbl_user on tbl_sc.user_id = tbl_user.id
+                 left outer join tbl_course on tbl_sc.course_id = tbl_course.id
+            limit #{pageNum}
+           , #{pageSize}
     </select>
 
     <update id="updateScore">
         update tbl_sc
         set score = #{score}
-        where user_id = #{userId} and course_id = #{courseId}
+        where user_id = #{userId}
+          and course_id = #{courseId}
     </update>
 
     <delete id="deleteScore">
-        delete from tbl_sc
-        where user_id = #{userId} and course_id = #{courseId}
+        delete
+        from tbl_sc
+        where user_id = #{userId}
+          and course_id = #{courseId}
     </delete>
 
     <insert id="insertScore">
@@ -44,46 +51,82 @@
         values (#{userId}, #{courseId}, #{score})
     </insert>
 
-    <select id="countByStuId" resultType="int">
+    <select id="countByStuId" resultType="long">
         select count(1)
         from tbl_sc
         where user_id = #{userId}
     </select>
 
-    <select id="countByCourseId" resultType="int">
+    <select id="countByCourseId" resultType="long">
         select count(1)
         from tbl_sc
         where course_id = #{courseId}
     </select>
 
     <select id="getScorePageByStuId" resultMap="ScoreResultMap">
-        select
-            tbl_sc.user_id,
-            tbl_user.username,
-            tbl_user.nickname,
-            tbl_sc.course_id,
-            tbl_course.course_name,
-            tbl_sc.score
-        from tbl_sc
-            left outer join tbl_user on tbl_sc.user_id = tbl_user.id
-            left outer join tbl_course on tbl_sc.course_id = tbl_course.id
-        where tbl_sc.user_id = #{userId}
-        limit #{pageNum}, #{pageSize}
+        select tbl_user.id            as user_id,
+               tbl_user.username      as username,
+               tbl_user.nickname      as nickname,
+               tbl_user.level         as level,
+               tbl_user.is_teacher    as is_teacher,
+               tbl_course.id          as course_id,
+               tbl_course.course_name as course_name,
+               tbl_sc.score           as score
+        from tbl_course
+                 left outer join tbl_user on tbl_user.id = #{userId}
+                 left outer join tbl_sc
+                                 on tbl_sc.user_id = tbl_user.id
+                                     and tbl_sc.course_id = tbl_course.id
+        limit #{pageNum}
+            , #{pageSize}
     </select>
 
     <select id="getScorePageByCourseId" resultMap="ScoreResultMap">
-        select
-            tbl_sc.user_id,
-            tbl_user.username,
-            tbl_user.nickname,
-            tbl_sc.course_id,
-            tbl_course.course_name,
-            tbl_sc.score
-        from tbl_sc
-            left outer join tbl_user on tbl_sc.user_id = tbl_user.id
-            left outer join tbl_course on tbl_sc.course_id = tbl_course.id
-        where tbl_sc.course_id = #{courseId}
-        limit #{pageNum}, #{pageSize}
+        select tbl_user.id            as user_id,
+               tbl_user.username      as username,
+               tbl_user.nickname      as nickname,
+               tbl_user.level         as level,
+               tbl_user.is_teacher    as is_teacher,
+               tbl_course.id          as course_id,
+               tbl_course.course_name as course_name,
+               tbl_sc.score           as score
+        from tbl_user
+                 left outer join tbl_course
+                                 on tbl_course.id = #{courseId}
+                 left outer join tbl_sc
+                                 on tbl_sc.user_id = tbl_user.id
+                                     and tbl_sc.course_id = tbl_course.id
+            limit #{pageNum}
+           , #{pageSize}
     </select>
+
+    <select id="getSumAnswerScoreByCourse" resultType="cn.edu.njnu.curriculumdesign.entity.Score">
+        select sum(answer_score) as score, user_id, #{courseId} as course_id
+        from tbl_comment
+                 left outer join tbl_user on tbl_user.id = tbl_comment.user_id
+        where post_id in (
+            select tbl_post.id
+            from tbl_post
+            where course_id = #{courseId}
+        )
+        group by user_id;
+    </select>
+
+    <select id="getSumQuestionScoreByCourse" resultType="cn.edu.njnu.curriculumdesign.entity.Score">
+        select author_id as user_id, course_id as course_id, sum(question_score) * 2 as score
+        from tbl_post
+        where course_id = #{courseId}
+        group by author_id;
+    </select>
+
+    <insert id="insertScoreBatch" parameterType="java.util.List">
+        insert into tbl_sc(user_id, course_id, score)
+        values
+        <foreach collection="scoreList" item="item" index="index" separator=",">
+            (#{item.userId}, #{item.courseId}, #{item.score})
+        </foreach>
+        on duplicate key
+        update user_id=values(user_id), course_id=values(course_id), score = values(score)
+    </insert>
 
 </mapper>

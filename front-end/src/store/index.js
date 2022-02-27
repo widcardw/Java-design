@@ -37,7 +37,7 @@ const store = createStore({
         currentCourse: state => {
             let currentCourse = state.currentCourse
             if (!currentCourse || currentCourse.id === 0) {
-                currentCourse = JSON.parse(sessionStorage.getItem('currentCourse'))
+                currentCourse = JSON.parse(window.localStorage.getItem('currentCourse'))
                 state.currentCourse = currentCourse
             }
             return currentCourse;
@@ -73,11 +73,11 @@ const store = createStore({
         },
         setCurrentCourse(state, course) {
             state.currentCourse = JSON.parse(JSON.stringify(course));
-            // window.localStorage.setItem('currentCourse', JSON.stringify(course));
+            window.localStorage.setItem('currentCourse', JSON.stringify(course));
         },
         setCurrentTags(state, tags) {
             state.currentTags = JSON.parse(JSON.stringify(tags));
-            // window.localStorage.setItem('currentTags', JSON.stringify(tags));
+            sessionStorage.setItem('currentTags', JSON.stringify(tags));
         },
     },
     actions: {

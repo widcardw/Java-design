@@ -1,25 +1,55 @@
 <template>
   <div>
-    <el-page-header content="问题详情" @back="$router.back" style="margin-bottom: 10px;"></el-page-header>
+    <div style="display: flex; justify-content: space-between;">
+      <el-page-header content="问题详情" @back="$router.back" style="margin-bottom: 10px;"/>
+      <div v-if="post.author && $store.getters.userInfo && (post.author.id===$store.getters.userInfo.id)">
+        <el-button type="text" @click="handleEdit">
+          <el-icon>
+            <edit/>
+          </el-icon>
+        </el-button>
+        <el-popconfirm title="确定删除这一问题吗？" @confirm="handleDelete">
+          <template #reference>
+            <el-button type="text" style="color: #f56c6c;">
+              <el-icon>
+                <delete/>
+              </el-icon>
+            </el-button>
+          </template>
+        </el-popconfirm>
+      </div>
+    </div>
     <!--    问题区    -->
     <el-card shadow="hover" style="margin-bottom: 10px;">
       <template #header>
         <div class="card-header">
           <div class="title">
             <h3>{{ post.title }}</h3>
+            <h4 style="margin: 10px 0;">
+              <el-badge :value="post.author && Math.floor(Math.log2(post.author.level))" :max="99"
+                        type="primary"><div style="margin-right: 10px;">{{ post.author && post.author.nickname }}</div>
+              </el-badge>
+            </h4>
             <span class="ctime">{{ new Date(post.createDate).toLocaleString() }}</span>
           </div>
           <div>
-            <h4 style="text-align: right">{{ post.author.nickname }} | {{ post.course.courseName }}</h4>
-            <el-tag size="small" v-for="it2 in post.tags" :key="it2" style="margin-left: 10px;"
-            >{{ it2.tagName }}
-            </el-tag>
+            <div style="display: flex; justify-content: flex-end;">
+              <el-rate
+                  v-model="post.questionScore"
+                  :disabled="$store.getters.userInfo && $store.getters.userInfo.isTeacher !== 1"
+                  :colors="['#f56c6c','#f56c6c','#f56c6c']"
+                  @change="submitQuestionScore"></el-rate>
+            </div>
+            <h4 style="text-align: right">{{ post.course && post.course.courseName }}</h4>
+            <div style="display: flex; justify-content: flex-end;">
+              <el-tag size="small" v-for="it2 in post.tags" :key="it2" style="margin-left: 10px;"
+              >{{ it2.tagName }}
+              </el-tag>
+            </div>
           </div>
         </div>
       </template>
-      <div class="content">
-        <p>{{ post.content }}</p>
-      </div>
+      <MarkShow :source="post.content + ''"/>
     </el-card>
     <!--    评论区    -->
     <el-card shadow="never">
@@ -28,91 +58,128 @@
           <h3>评论</h3>
         </div>
       </template>
-        <el-form label-width="80px" :model="form" ref="form" :rules="rules">
-          <el-form-item label="问题编号" style="display: none;" prop="postId">
-            <el-input v-model="form.postId" disabled></el-input>
-          </el-form-item>
-          <el-form-item label="用户 id" style="display: none;" prop="userId">
-            <el-input v-model="form.userId" disabled></el-input>
-          </el-form-item>
-          <el-form-item label="评论内容" prop="content">
-            <el-input type="textarea" v-model="form.content" placeholder="请输入评论内容"
-                      :autosize="{ minRows: 2, maxRows: 5 }"
-            ></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="addComment">提交</el-button>
-          </el-form-item>
-        </el-form>
+      <el-form label-width="80px" :model="form" ref="form" :rules="rules">
+        <el-form-item label="问题编号" style="display: none;" prop="postId">
+          <el-input v-model="form.postId" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="用户 id" style="display: none;" prop="userId">
+          <el-input v-model="form.userId" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="评论内容" prop="content">
+          <el-input type="textarea" v-model="form.content" placeholder="请输入评论内容，提交后支持 markdown 渲染"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+          ></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addComment">提交</el-button>
+        </el-form-item>
+      </el-form>
       <el-divider/>
       <div v-for="item in comments" :key="item">
-          <div class="card-header">
-            <div class="comment-title">
-              <h4>{{ item.nickname }}</h4>
-              <span class="ctime">{{ new Date(item.createDate).toLocaleString() }}</span>
-            </div>
-            <h5>{{ item.answerScore !== 0 ? item.answerScore : '' }}</h5>
+        <div class="card-header">
+          <div class="comment-title">
+            <h4>
+              <el-badge :value="Math.floor(Math.log2(item.level))" :max="99" class="mark" type="primary">
+                <div style="margin-right: 10px;">{{ item.nickname }}</div></el-badge>
+            </h4>
+            <span class="ctime">{{ new Date(item.createDate).toLocaleString() }}</span>
           </div>
-        {{ item.content }}
+          <el-rate
+              v-model="item.answerScore"
+              :disabled="!(post.author && $store.getters.userInfo && (post.author.id===$store.getters.userInfo.id))"
+              @change="submitCommentScore(item.id, item.answerScore)"
+          ></el-rate>
+        </div>
+        <!--        <Markdown :source="item.content" :plugins="plugins" class="markdown-body"/>-->
+        <MarkShow :source="item.content + ''"/>
         <el-divider/>
       </div>
     </el-card>
     <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="pageNum"
-      :page-sizes="[5, 10, 20, 50, 100]"
-      :page-size="pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"></el-pagination>
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="pageNum"
+        :page-sizes="[5, 10, 20, 50, 100]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        style="margin-top: 10px;"></el-pagination>
     <el-backtop/>
   </div>
 </template>
 
 <script>
 import request from "../utils/request";
+import {Edit, Delete} from "@element-plus/icons-vue"
+import MarkShow from "../components/MarkShow.vue";
 
 export default {
   name: "postdetail",
+  components: {
+    Edit, Delete, MarkShow
+  },
   data() {
     return {
       post: {},
-      comments: [{
-        user_id: "某人",
-        content: "啊这",
-        createDate: "2022/02/22",
-        answerScore: 0,
-        postId: 0
-      }],
+      comments: [],
       pageNum: 1,
       pageSize: 10,
       total: 0,
       form: {},
       rules: {
         content: [
-          { required: true, message: "请输入评论内容", trigger: "blur" }
+          {required: true, message: "请输入评论内容", trigger: "blur"}
         ],
         postId: [
-          { required: true, message: "无问题编号", trigger: "blur" }
+          {required: true, message: "无问题编号", trigger: "blur"}
         ],
         userId: [
-          { required: true, message: "无用户 id", trigger: "blur" }
+          {required: true, message: "请先登录", trigger: "blur"}
         ]
-      }
+      },
     }
   },
   created() {
     console.log("postdetail created");
-    if (!this.$route.params.post) {
+    if (!this.$route.query.post) {
       this.$router.push("/");
       return;
     }
-    this.post = JSON.parse(this.$route.params.post);
-    this.form.postId = this.post.id;
+    this.form.postId = JSON.parse(this.$route.query.post)
     this.form.userId = this.$store.getters.userInfo.id;
-    this.fetchComments();
+    console.log(this.form)
+    this.fetchPost()
+    // this.fetchComments();
   },
   methods: {
+    fetchPost() {
+      if (!this.form.postId) {
+        return;
+      }
+      request({
+        url: '/post/byid',
+        method: 'get',
+        params: {
+          id: this.form.postId
+        }
+      }).then(res => {
+        console.log(res)
+        if (res.code === '200') {
+          this.post = res.data;
+          return this.post.id;
+        } else {
+          throw new Error(res.message);
+        }
+      }).then(id => {
+        if (!id) {
+          throw new Error("无问题编号");
+        }
+        this.fetchComments();
+      }).catch(err => {
+        console.log(err);
+        this.$message.error(err.message);
+      })
+    },
     fetchComments() {
       request({
         method: "get",
@@ -128,7 +195,7 @@ export default {
           this.comments = res.data.records;
           this.total = res.data.total;
         } else {
-          this.$message.error(res.message);
+          throw new Error(res.message)
         }
       }).catch(err => {
         console.log(err);
@@ -145,7 +212,7 @@ export default {
           method: "post",
           url: "/comment",
           data: this.form
-        }).then(res=> {
+        }).then(res => {
           console.log(res)
           if (res.code === '200') {
             this.$message.success("发送成功");
@@ -160,11 +227,76 @@ export default {
         });
       })
     },
-    handleSizeChange() {
+    handleSizeChange(val) {
+      this.pageSize = val;
       this.fetchComments()
     },
-    handleCurrentChange() {
+    handleCurrentChange(val) {
+      this.pageNum = val;
       this.fetchComments()
+    },
+    handleEdit() {
+      this.$router.push({
+        path: "/editpost",
+        query: {
+          post: JSON.stringify(this.post)
+        }
+      })
+    },
+    submitCommentScore(commentId, score) {
+      request({
+        method: "put",
+        url: "/comment",
+        data: {
+          id: commentId,
+          answerScore: score
+        }
+      }).then(res => {
+        if (res.code === '200') {
+          this.$message.success("评分成功");
+        } else {
+          this.$message.error(res.message);
+        }
+      }).catch(err => {
+        console.log(err);
+        this.$message.error(err.message);
+      })
+    },
+    submitQuestionScore() {
+      request({
+        method: "put",
+        url: "/post/update",
+        data: {
+          id: this.post.id,
+          questionScore: this.post.questionScore
+        }
+      }).then(res => {
+        if (res.code === '200') {
+          this.$message.success("评分成功");
+        } else {
+          this.$message.error(res.message);
+        }
+      }).catch(err => {
+        console.log(err);
+        this.$message.error(err.message);
+      })
+    },
+    handleDelete() {
+      console.log(this.post.id);
+      request({
+        method: "delete",
+        url: "/post/" + this.post.id
+      }).then(res => {
+        if (res.code === '200') {
+          this.$message.success("删除成功");
+          this.$router.push("/");
+        } else {
+          this.$message.error(res.message);
+        }
+      }).catch(err => {
+        console.log(err);
+        this.$message.error(err.message);
+      })
     }
   }
 }
@@ -180,7 +312,9 @@ export default {
   display: flex;
   justify-content: space-between;
 }
+
 .comment-title {
   margin-bottom: 10px;
 }
+
 </style>

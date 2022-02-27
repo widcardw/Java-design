@@ -16,4 +16,6 @@ public interface PostService extends IService<Post> {
     Page<PostDto> pageByCourseIdAndTagList(Page<PostDto> page, Integer courseId, List<Integer> tagIds);
 
     Page<PostDto> pageAll(Page<PostDto> page);
+
+    PostDto getPostDtoById(Integer id);
 }

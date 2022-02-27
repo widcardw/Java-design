@@ -22,7 +22,7 @@ export default (command, mode) => {
                 // '/foo': '',
                 // 选项写法
                 '/api': {
-                    target: 'http://localhost:9090',
+                    target: 'http://1.116.110.23:9090',
                     changeOrigin: true,
                     rewrite: path => path.replace(/^\/api/, '')
                 }
@@ -43,5 +43,6 @@ export default (command, mode) => {
                 }
             }
         },
+        publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
     })
 }

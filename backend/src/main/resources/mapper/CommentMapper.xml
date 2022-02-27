@@ -8,6 +8,7 @@
         <result property="userId" column="user_id"/>
         <result property="username" column="username"/>
         <result property="nickname" column="nickname"/>
+        <result property="level" column="level"/>
         <result property="content" column="comment_content"/>
         <result property="answerScore" column="answer_score"/>
         <result property="postId" column="post_id"/>
@@ -19,6 +20,7 @@
                user_id,
                username,
                nickname,
+               tbl_user.level as level,
                content        as comment_content,
                answer_score,
                post_id,

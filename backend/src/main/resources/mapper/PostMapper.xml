@@ -40,30 +40,57 @@
         </collection>
     </resultMap>
 
-    <select id="getPostDtoPageByCourseIdAndTagList" resultMap="PostDtoResult">
-        select tbl_post.id as post_id,
-        tbl_post.title as post_title,
-        tbl_post.content as post_content,
-        tbl_post.question_score as post_question_score,
-        tbl_post.create_date as post_create_date,
+    <select id="getPostById" resultMap="PostDtoResult">
+        select my_post.id             as post_id,
+               my_post.title          as post_title,
+               my_post.content        as post_content,
+               my_post.question_score as post_question_score,
+               my_post.create_date    as post_create_date,
 
-        tbl_post.author_id as author_id,
-        tbl_user.username   as username,
-        tbl_user.nickname  as nickname,
-        tbl_user.level    as level,
+               my_post.author_id      as author_id,
+               tbl_user.username      as username,
+               tbl_user.nickname      as nickname,
+               tbl_user.level         as level,
+               tbl_user.is_teacher    as is_teacher,
+
+               my_post.course_id      as course_id,
+               tbl_course.course_name as course_name,
+
+               tbl_tag.id             as tag_id,
+               tbl_tag.tag_name       as tag_name,
+               tbl_tag.course_id      as tag_course_id
+
+        from (select *
+              from tbl_post
+              where tbl_post.id = #{id}) as my_post
+                 left outer join tbl_user on my_post.author_id = tbl_user.id
+                 left outer join tbl_course on my_post.course_id = tbl_course.id
+                 left outer join tbl_tag
+                                 on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id = my_post.id)
+    </select>
+
+    <select id="getPostDtoPageByCourseIdAndTagList" resultMap="PostDtoResult">
+        select
+        my_post.id as post_id,
+        my_post.title as post_title,
+        my_post.content as post_content,
+        my_post.question_score as post_question_score,
+        my_post.create_date as post_create_date,
+
+        my_post.author_id as author_id,
+        tbl_user.username as username,
+        tbl_user.nickname as nickname,
+        tbl_user.level as level,
         tbl_user.is_teacher as is_teacher,
 
-        tbl_post.course_id as course_id,
+        my_post.course_id as course_id,
         tbl_course.course_name as course_name,
 
         tbl_tag.id as tag_id,
         tbl_tag.tag_name as tag_name,
         tbl_tag.course_id as tag_course_id
 
-        from tbl_post
-        left outer join tbl_user on tbl_post.author_id= tbl_user.id
-        left outer join tbl_course on tbl_post.course_id= tbl_course.id
-        left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=tbl_post.id)
+        from (select * from tbl_post
         where tbl_post.course_id=#{courseId}
         and tbl_post.id in (
         select tbl_tag_relation.post_id
@@ -74,69 +101,75 @@
         </foreach>
         )
         order by tbl_post.create_date desc
-        limit #{pageNum}
-        , #{pageSize}
+        limit #{pageNum}, #{pageSize}) as my_post
+        left outer join tbl_user on my_post.author_id= tbl_user.id
+        left outer join tbl_course on my_post.course_id= tbl_course.id
+        left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=my_post.id)
     </select>
 
-    <select id="pageByCourseId"  resultMap="PostDtoResult">
-        select tbl_post.id as post_id,
-               tbl_post.title as post_title,
-               tbl_post.content as post_content,
-               tbl_post.question_score as post_question_score,
-               tbl_post.create_date as post_create_date,
+    <select id="pageByCourseId" resultMap="PostDtoResult">
+        select my_post.id             as post_id,
+               my_post.title          as post_title,
+               my_post.content        as post_content,
+               my_post.question_score as post_question_score,
+               my_post.create_date    as post_create_date,
 
-               tbl_post.author_id as author_id,
-               tbl_user.username   as username,
-               tbl_user.nickname  as nickname,
-               tbl_user.level    as level,
-               tbl_user.is_teacher as is_teacher,
+               my_post.author_id      as author_id,
+               tbl_user.username      as username,
+               tbl_user.nickname      as nickname,
+               tbl_user.level         as level,
+               tbl_user.is_teacher    as is_teacher,
 
-               tbl_post.course_id as course_id,
+               my_post.course_id      as course_id,
                tbl_course.course_name as course_name,
 
-               tbl_tag.id as tag_id,
-               tbl_tag.tag_name as tag_name,
-               tbl_tag.course_id as tag_course_id
+               tbl_tag.id             as tag_id,
+               tbl_tag.tag_name       as tag_name,
+               tbl_tag.course_id      as tag_course_id
 
-        from tbl_post
-                 left outer join tbl_user on tbl_post.author_id= tbl_user.id
-                 left outer join tbl_course on tbl_post.course_id= tbl_course.id
-                 left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=tbl_post.id)
-        where tbl_post.course_id=#{courseId}
-        order by tbl_post.create_date desc
-            limit #{pageNum}
-               , #{pageSize}
+        from (select *
+              from tbl_post
+              where tbl_post.course_id = #{courseId}
+              order by tbl_post.create_date
+                      desc limit #{pageNum}, #{pageSize}) as my_post
+                 left outer join tbl_user on my_post.author_id = tbl_user.id
+                 left outer join tbl_course on my_post.course_id = tbl_course.id
+                 left outer join tbl_tag
+                                 on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id = my_post.id)
     </select>
 
     <select id="pageAll" resultMap="PostDtoResult">
-        select tbl_post.id as post_id,
-               tbl_post.title as post_title,
-               tbl_post.content as post_content,
-               tbl_post.question_score as post_question_score,
-               tbl_post.create_date as post_create_date,
+        select mypost.id              as post_id,
+               mypost.title           as post_title,
+               mypost.content         as post_content,
+               mypost.question_score  as post_question_score,
+               mypost.create_date     as post_create_date,
 
-               tbl_post.author_id as author_id,
-               tbl_user.username   as username,
-               tbl_user.nickname  as nickname,
-               tbl_user.level    as level,
-               tbl_user.is_teacher as is_teacher,
+               mypost.author_id       as author_id,
+               tbl_user.username      as username,
+               tbl_user.nickname      as nickname,
+               tbl_user.level         as level,
+               tbl_user.is_teacher    as is_teacher,
 
-               tbl_post.course_id as course_id,
+               mypost.course_id       as course_id,
                tbl_course.course_name as course_name,
 
-               tbl_tag.id as tag_id,
-               tbl_tag.tag_name as tag_name,
-               tbl_tag.course_id as tag_course_id
+               tbl_tag.id             as tag_id,
+               tbl_tag.tag_name       as tag_name,
+               tbl_tag.course_id      as tag_course_id
 
-        from tbl_post
-                 left outer join tbl_user on tbl_post.author_id= tbl_user.id
-                 left outer join tbl_course on tbl_post.course_id= tbl_course.id
-                 left outer join tbl_tag on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id=tbl_post.id)
-        order by tbl_post.create_date desc
-            limit #{pageNum}
-               , #{pageSize}
+        from (select *
+              from tbl_post
+              order by tbl_post.create_date desc
+                  limit #{pageNum}, #{pageSize}) as mypost
+                 left outer join tbl_user on mypost.author_id = tbl_user.id
+                 left outer join tbl_course on mypost.course_id = tbl_course.id
+                 left outer join tbl_tag
+                                 on tbl_tag.id in (select tag_id from tbl_tag_relation where post_id = mypost.id)
+        order by mypost.create_date desc
     </select>
 
+    <!--    deprecated    -->
     <select id="getPostPageByCourseIdAndTag" resultType="cn.edu.njnu.curriculumdesign.entity.Post">
         select *
         from tbl_post

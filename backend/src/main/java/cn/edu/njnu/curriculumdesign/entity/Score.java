@@ -11,9 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Score {
-    @TableId(value = "user_id")
     private int userId;
-    @TableId(value = "course_id")
     private int courseId;
     private int score;
 }

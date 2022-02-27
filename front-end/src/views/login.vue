@@ -38,6 +38,11 @@ export default {
       loading: false
     }
   },
+  created() {
+    if (this.$store.getters.hasLogin) {
+      this.$router.push("/");
+    }
+  },
   methods: {
     onSubmit() {
       this.$refs['form'].validate((valid)=>{

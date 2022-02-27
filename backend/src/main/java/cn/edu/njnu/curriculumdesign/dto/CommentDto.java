@@ -14,6 +14,7 @@ public class CommentDto {
     private Integer userId;
     private String username;
     private String nickname;
+    private Integer level;
     private String content;
     private Integer answerScore;
     private Integer postId;

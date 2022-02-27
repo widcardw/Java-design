@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service("ScoreService")
 public class ScoreServiceImpl implements ScoreService {
@@ -76,5 +80,23 @@ public class ScoreServiceImpl implements ScoreService {
     @Override
     public long countByCourseId(Integer courseId) {
         return scoreMapper.countByCourseId(courseId);
+    }
+
+    @Override
+    public void calculateScoreByCourseId(Integer courseId) {
+        List<Score> sumAnswerScore = scoreMapper.getSumAnswerScoreByCourse(courseId);
+        List<Score> sumQuestionScore = scoreMapper.getSumQuestionScoreByCourse(courseId);
+        Map<Integer, Score> hashMap = new HashMap<>();
+
+        Stream.concat(sumAnswerScore.stream(), sumQuestionScore.stream()).forEach(score -> {
+            if (!hashMap.containsKey(score.getUserId())) {
+                hashMap.put(score.getUserId(), score);
+            } else {
+                hashMap.get(score.getUserId()).setScore(hashMap.get(score.getUserId()).getScore() + score.getScore());
+            }
+        });
+
+        List<Score> scoreList = new ArrayList<>(hashMap.values());
+        scoreMapper.insertScoreBatch(scoreList);
     }
 }

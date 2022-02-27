@@ -7,8 +7,7 @@ import Header from '@/components/Header.vue'
 
 <template>
   <div>
-    <Header :currentUser="JSON.parse(JSON.stringify($store.getters.userInfo))"></Header>
-    <router-view style="max-width: 1000px; margin: 10px auto;"/>
+    <router-view/>
   </div>
 </template>
 

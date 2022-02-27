@@ -3,6 +3,7 @@ package cn.edu.njnu.curriculumdesign.controller;
 import cn.edu.njnu.curriculumdesign.common.Result;
 import cn.edu.njnu.curriculumdesign.entity.Course;
 import cn.edu.njnu.curriculumdesign.service.CourseService;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,10 @@ public class CourseController {
 
     @PostMapping("/addone")
     public Result<?> addCourse(@RequestBody Course course) {
+        int length = StrUtil.length(course.getCourseName());
+        if (length > 20) {
+            return Result.fail("-2","课程名称过长");
+        }
         courseService.save(course);
         return Result.success();
     }
@@ -45,6 +50,10 @@ public class CourseController {
 
     @PutMapping("/updateone")
     public Result<?> updateCourse(@RequestBody Course course) {
+        int length = StrUtil.length(course.getCourseName());
+        if (length > 100) {
+            return Result.fail("-2","课程名称过长");
+        }
         courseService.updateById(course);
         return Result.success();
     }

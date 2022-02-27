@@ -19,4 +19,9 @@ public interface ScoreMapper {
 
     Long countByStuId(Integer stuId);
     Long countByCourseId(Integer courseId);
+
+    List<Score> getSumAnswerScoreByCourse(Integer courseId);
+    List<Score> getSumQuestionScoreByCourse(Integer courseId);
+
+    void insertScoreBatch(List<Score> scoreList);
 }

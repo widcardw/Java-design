@@ -8,4 +8,6 @@ public interface UserService extends IService<User> {
     Page<User> getStudentByPage(Page<User> page);
     Page<User> getTeacherByPage(Page<User> page);
     User login(User user);
+
+    void calculateLevel(Integer userId);
 }

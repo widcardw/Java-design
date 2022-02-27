@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.njnu.curriculumdesign.mapper.UserMapper">
+
+    <select id="sumQuestionScoreByUserId" resultType="long">
+        select coalesce(sum(tbl_post.question_score), 0)
+        from tbl_user
+                 left outer join tbl_post on tbl_user.id = tbl_post.author_id
+        where tbl_user.id = #{userId}
+        group by tbl_user.id
+    </select>
+
+    <select id="sumAnswerScoreByUserId" resultType="long">
+        select coalesce(sum(tbl_comment.answer_score), 0)
+        from tbl_user
+                 left outer join tbl_comment on tbl_user.id = tbl_comment.user_id
+        where tbl_user.id = #{userId}
+        group by tbl_user.id
+    </select>
+
+</mapper>

@@ -19,4 +19,6 @@ public interface PostMapper extends BaseMapper<Post> {
     List<PostDto> pageByCourseId(Map<String, Object> params);
 
     List<PostDto> pageAll(Map<String, Object> params);
+
+    PostDto getPostById(Integer id);
 }

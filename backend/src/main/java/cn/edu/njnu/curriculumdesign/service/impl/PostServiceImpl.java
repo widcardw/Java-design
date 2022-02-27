@@ -87,4 +87,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         return page;
     }
 
+    @Override
+    public PostDto getPostDtoById(Integer id) {
+        return postMapper.getPostById(id);
+    }
+
 }
