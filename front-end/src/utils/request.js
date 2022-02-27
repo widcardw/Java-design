@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const request = axios.create({
-    baseURL: '/api',
+    baseURL: 'http://1.116.110.23:9090',  // 部署服务器
+    // baseURL: '/api',  // 开发环境
     timeout: 5000
 })
 

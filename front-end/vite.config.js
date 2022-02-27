@@ -12,7 +12,7 @@ export default (command, mode) => {
             }
         },
         server: {
-            host: '127.0.0.1',
+            host: 'localhost',
             port: Number(loadEnv(mode, process.cwd()).VITE_APP_PORT),
             strictPort: true, // 端口被占用直接退出
             https: false,
@@ -22,7 +22,7 @@ export default (command, mode) => {
                 // '/foo': '',
                 // 选项写法
                 '/api': {
-                    target: 'http://1.116.110.23:9090',
+                    target: 'http://localhost:9090',
                     changeOrigin: true,
                     rewrite: path => path.replace(/^\/api/, '')
                 }
