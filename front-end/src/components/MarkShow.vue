@@ -7,7 +7,7 @@ import Markdown from 'vue3-markdown-it';
 import MarkdownItKatex from 'markdown-it-katex'
 import 'highlight.js/styles/github.css'
 import 'katex/dist/katex.min.css'
-import 'github-markdown-css/github-markdown.css'
+import 'github-markdown-css/github-markdown-light.css'
 export default {
   name: "MarkShow",
   components: {
