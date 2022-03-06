@@ -94,7 +94,7 @@ export default {
         }
       }).then(res => {
         if (res.code === '200') {
-          this.$message.success("更新成功");
+          this.$message.success("更新 " + res.data + " 条成绩");
           return true;
         } else {
           throw new Error(res.message);
@@ -104,7 +104,7 @@ export default {
           this.getData();
         }
       }).catch(err => {
-        this.$message.error("更新失败");
+        this.$message.error(err.message);
       });
     },
     getData() {

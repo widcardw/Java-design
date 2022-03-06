@@ -27,16 +27,4 @@ public class PostDto {
     private User author;
     private Course course;
     private List<Tag> tags;
-
-
-//    private Integer authorId;
-//    private String username;
-//    private String nickname;
-//    private Integer level;
-//    private Integer isTeacher;
-//
-//    private Integer courseId;
-//    private String courseName;
-//
-//    private List<Tag> tagList;
 }

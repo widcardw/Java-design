@@ -1,6 +1,5 @@
 package cn.edu.njnu.curriculumdesign.mapper;
 
-import cn.edu.njnu.curriculumdesign.dto.UserLevelDto;
 import cn.edu.njnu.curriculumdesign.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;

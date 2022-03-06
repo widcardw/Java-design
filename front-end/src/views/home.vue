@@ -27,7 +27,10 @@
             </div>
             <div>
               <div style="display: flex; justify-content: flex-end;">
-                <el-rate v-model="item.questionScore" disabled :colors="['#f56c6c','#f56c6c','#f56c6c']"></el-rate>
+                <el-tooltip
+                    :content="$store.getters.userInfo && $store.getters.userInfo.isTeacher ? '进入详情页面评分' : (item.questionScore === 0 ? '暂无评分' : item.questionScore + ' 分')">
+                  <el-rate v-model="item.questionScore" disabled :colors="['#f56c6c','#f56c6c','#f56c6c']"></el-rate>
+                </el-tooltip>
               </div>
               <h4 style="text-align: right">{{ item.course.courseName }}</h4>
               <div style="display: flex; justify-content: flex-end;">
@@ -74,8 +77,6 @@ export default {
       pageSize: 10,
       total: 50,
     }
-  },
-  created() {
   },
   methods: {
     goToWritePost() {
@@ -149,10 +150,12 @@ export default {
       }
     },
     handleSizeChange(val) {
+      console.log("Size changed")
       this.pageSize = val
       this.handleChange();
     },
     handleCurrentChange(val) {
+      console.log("Current changed")
       this.pageNum = val;
       this.handleChange();
     },
@@ -186,15 +189,18 @@ export default {
       this.$router.push({name: "postdetail", query: {post: JSON.stringify(post.id)}})
     }
   },
-  mounted() {
+  created: function () {
     this.handleChange();
     this.$emitter.on('headerFetchAll', () => {
+      console.log("headerFetchAll")
       this.fetchAll()
     })
     this.$emitter.on('headerFetchPostsByCourseId', (courseId) => {
+      console.log("FetchPostsByCourseId")
       this.fetchPostsByCourseId(courseId)
     })
     this.$emitter.on('headerFetchPostsByCourseIdAndTags', (courseId, tags) => {
+      console.log("FetchPostsByCourseIdAndTags")
       this.fetchPostsByCourseIdAndTags(courseId, tags)
     })
   }

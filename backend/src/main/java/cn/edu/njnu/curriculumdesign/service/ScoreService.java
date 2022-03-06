@@ -16,5 +16,5 @@ public interface ScoreService {
     long countByStuId(Integer userId);
     long countByCourseId(Integer courseId);
 
-    void calculateScoreByCourseId(Integer courseId);
+    long calculateScoreByCourseId(Integer courseId);
 }

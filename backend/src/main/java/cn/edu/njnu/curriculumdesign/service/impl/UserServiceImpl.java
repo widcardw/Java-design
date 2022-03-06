@@ -1,18 +1,14 @@
 package cn.edu.njnu.curriculumdesign.service.impl;
 
-import cn.edu.njnu.curriculumdesign.dto.UserLevelDto;
 import cn.edu.njnu.curriculumdesign.entity.User;
 import cn.edu.njnu.curriculumdesign.mapper.UserMapper;
 import cn.edu.njnu.curriculumdesign.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service("UserService")

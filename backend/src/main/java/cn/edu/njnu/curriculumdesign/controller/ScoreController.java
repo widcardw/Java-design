@@ -31,7 +31,7 @@ public class ScoreController {
 
     @PostMapping("/update")
     public Result<?> updateScoreByCourseId(@RequestBody Score score) {
-        scoreService.calculateScoreByCourseId(score.getCourseId());
-        return Result.success();
+        long l = scoreService.calculateScoreByCourseId(score.getCourseId());
+        return Result.success(l);
     }
 }

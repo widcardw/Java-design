@@ -60,7 +60,6 @@ export default {
                 message: '登录成功!'
               });
               this.$store.dispatch('Login', res.data);
-              this.$emit('loggedin', res.data);
               this.$router.push('/');
             } else {
               this.$message({

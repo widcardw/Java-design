@@ -83,7 +83,7 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     @Override
-    public void calculateScoreByCourseId(Integer courseId) {
+    public long calculateScoreByCourseId(Integer courseId) {
         List<Score> sumAnswerScore = scoreMapper.getSumAnswerScoreByCourse(courseId);
         List<Score> sumQuestionScore = scoreMapper.getSumQuestionScoreByCourse(courseId);
         Map<Integer, Score> hashMap = new HashMap<>();
@@ -96,7 +96,12 @@ public class ScoreServiceImpl implements ScoreService {
             }
         });
 
+        if (hashMap.size() == 0) {
+            return 0;
+        }
+
         List<Score> scoreList = new ArrayList<>(hashMap.values());
         scoreMapper.insertScoreBatch(scoreList);
+        return scoreList.size();
     }
 }

@@ -27,7 +27,8 @@
             <h3>{{ post.title }}</h3>
             <h4 style="margin: 10px 0;">
               <el-badge :value="post.author && Math.floor(Math.log2(post.author.level))" :max="99"
-                        type="primary"><div style="margin-right: 10px;">{{ post.author && post.author.nickname }}</div>
+                        type="primary">
+                <div style="margin-right: 10px;">{{ post.author && post.author.nickname }}</div>
               </el-badge>
             </h4>
             <span class="ctime">{{ new Date(post.createDate).toLocaleString() }}</span>
@@ -67,30 +68,49 @@
         </el-form-item>
         <el-form-item label="评论内容" prop="content">
           <el-input type="textarea" v-model="form.content" placeholder="请输入评论内容，提交后支持 markdown 渲染"
-                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    :autosize="{ minRows: 2, maxRows: 5 }" ref="commentRef"
           ></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="addComment">提交</el-button>
+          <el-button @click="cancelComment">取消</el-button>
         </el-form-item>
       </el-form>
       <el-divider/>
-      <div v-for="item in comments" :key="item">
+      <div v-for="item in comments" :key="item" :id="'comment-'+item.id">
         <div class="card-header">
           <div class="comment-title">
             <h4>
               <el-badge :value="Math.floor(Math.log2(item.level))" :max="99" class="mark" type="primary">
-                <div style="margin-right: 10px;">{{ item.nickname }}</div></el-badge>
+                <div style="margin-right: 10px;">{{ item.nickname }}</div>
+              </el-badge>
             </h4>
             <span class="ctime">{{ new Date(item.createDate).toLocaleString() }}</span>
           </div>
-          <el-rate
-              v-model="item.answerScore"
-              :disabled="!(post.author && $store.getters.userInfo && (post.author.id===$store.getters.userInfo.id))"
-              @change="submitCommentScore(item.id, item.answerScore)"
-          ></el-rate>
+          <div>
+            <el-rate
+                v-model="item.answerScore"
+                :disabled="!(post.author && $store.getters.userInfo && (post.author.id===$store.getters.userInfo.id))"
+                @change="submitCommentScore(item.id, item.answerScore)"
+            ></el-rate>
+            <div style="display: flex; justify-content: flex-end;">
+              <el-button type="text" @click="handleCommentEdit(item)">
+                <el-icon>
+                  <edit/>
+                </el-icon>
+              </el-button>
+              <el-popconfirm title="确定删除这一评论吗？" @confirm="handleCommentDelete(item.id)">
+                <template #reference>
+                  <el-button type="text" style="color: #f56c6c;">
+                    <el-icon>
+                      <delete/>
+                    </el-icon>
+                  </el-button>
+                </template>
+              </el-popconfirm>
+            </div>
+          </div>
         </div>
-        <!--        <Markdown :source="item.content" :plugins="plugins" class="markdown-body"/>-->
         <MarkShow :source="item.content + ''"/>
         <el-divider/>
       </div>
@@ -128,7 +148,8 @@ export default {
       form: {},
       rules: {
         content: [
-          {required: true, message: "请输入评论内容", trigger: "blur"}
+          {required: true, message: "请输入评论内容", trigger: "blur"},
+          {min: 3,  message: "请输入至少 3 个字符", trigger: "blur"}
         ],
         postId: [
           {required: true, message: "无问题编号", trigger: "blur"}
@@ -152,6 +173,34 @@ export default {
     // this.fetchComments();
   },
   methods: {
+    handleCommentEdit(item) {
+      this.form.id = item.id;
+      this.form.content = item.content;
+      document.querySelector("#comment-" + item.id).style.display = "none";
+      this.$refs.commentRef.focus();
+    },
+    handleCommentDelete(id) {
+      request({
+        url: "/comment/" + id,
+        method: "delete"
+      }).then(res => {
+        if (res.code === "200") {
+          this.$message.success("删除成功");
+          this.fetchComments();
+        } else {
+          throw new Error(res.message);
+        }
+      }).catch(err => {
+        this.$message.error(err.message);
+      });
+    },
+    cancelComment() {
+      if (this.form.id) {
+        document.querySelector("#comment-" + this.form.id).style.display = "block";
+      }
+      this.form.id = null;
+      this.form.content = '';
+    },
     fetchPost() {
       if (!this.form.postId) {
         return;
@@ -203,19 +252,24 @@ export default {
       });
     },
     addComment() {
-      console.log(this.form);
+      // console.log(this.form);
+      let method = 'post', successMsg = '发送成功';
+      if (this.form.id) {
+        method = 'put';
+        successMsg = '修改成功';
+      }
       this.$refs['form'].validate((valid) => {
         if (!valid) {
           return;
         }
         request({
-          method: "post",
+          method: method,
           url: "/comment",
           data: this.form
         }).then(res => {
           console.log(res)
           if (res.code === '200') {
-            this.$message.success("发送成功");
+            this.$message.success(successMsg);
             this.fetchComments();
             this.form.content = '';
           } else {
@@ -317,4 +371,8 @@ export default {
   margin-bottom: 10px;
 }
 
+.comment-on-edit {
+  user-select: none;
+
+}
 </style>

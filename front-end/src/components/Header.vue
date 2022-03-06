@@ -146,15 +146,18 @@ export default {
       this.$store.dispatch("SetCurrentCourse", null)
       this.selectedCourse = null;
       this.$emitter.emit('headerFetchAll')
+      console.log("header emit backMain")
     },
     fetchPostsByCourseId() {
       let courseId = this.selectedCourse.id;
       this.$emitter.emit('headerFetchPostsByCourseId', courseId);
+      console.log("header emit fetchPostsByCourseId")
     },
     fetchPostsByCourseIdAndTags() {
       let courseId = this.selectedCourse.id;
       let tagIds = Object.values(this.dynamicTags);
       this.$emitter.emit('headerFetchPostsByCourseIdAndTags', courseId, tagIds);
+      console.log("header emit fetchPostsByCourseIdAndTags")
     },
     searchByTag() {
       console.log(this.dynamicTags);
